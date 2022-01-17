@@ -2,21 +2,21 @@
 #include <unistd.h>
 
 // structs & global variables
+typedef struct meta_data {
+  size_t size;
+  unsigned char is_used;
+  struct meta_data * prev_block;
+  struct meta_data * next_block;
+  struct meta_data * prev_free_block;
+  struct meta_data * next_free_block;
+} meta_data_t;
+
 meta_data_t * block_tail = NULL;
 meta_data_t * free_list_head = NULL;
 unsigned long segment_size = 0;
 unsigned long segment_free_space_size = 0;
 
 typedef void (*add_func_t) (meta_data_t *);
-
-typedef struct meta_data {
-  size_t size;
-  uint8_t is_used;
-  meta_data_t * prev_block;
-  meta_data_t * next_block;
-  meta_data_t * prev_free_block;
-  meta_data_t * next_free_block;
-} meta_data_t;
 
 // First Fit malloc/free
 void *ff_malloc(size_t size);
@@ -39,5 +39,5 @@ void * add_new_block(size_t size);
 void _free(void * ptr, add_func_t f);
 
 // functions used for manipulating free list
-void add_to_free_list_ff(meta_data_t *);
-void add_to_free_list_bf(meta_data_t *);
+void add_to_free_list_ff(meta_data_t * block);
+void add_to_free_list_bf(meta_data_t * block);
