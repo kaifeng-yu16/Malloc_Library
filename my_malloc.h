@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <assert.h>
 
 // structs & global variables
 typedef struct meta_data {
@@ -31,13 +32,17 @@ unsigned long get_data_segment_size(); // in bytes
 unsigned long get_data_segment_free_space_size(); // in bytes
 
 // functions used for implementing malloc
-void * _malloc(size_t size, add_func_t f);
+void * f_malloc(size_t size, add_func_t f);
 void * try_existed_block(size_t size, add_func_t f);
 void * add_new_block(size_t size);
 
 // functions used for implementing free
-void _free(void * ptr, add_func_t f);
+void f_free(void * ptr, add_func_t f);
+void try_coalesce(meta_data_t * block, add_func_t f);
 
 // functions used for manipulating free list
-void add_to_free_list_ff(meta_data_t * block);
+void add_to_free_list_ff(meta_data_t * block); // need to set is_used to 0
 void add_to_free_list_bf(meta_data_t * block);
+void remove_block(meta_data_t * block); // need to set is_used to 1
+// split a block into two blocks, return a ptr to the second block
+meta_data_t * split_block(meta_data_t* block1, size_t size);
