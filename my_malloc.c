@@ -1,5 +1,11 @@
 #include "my_malloc.h"
 
+meta_data_t * block_tail = NULL;
+meta_data_t * free_list_head = NULL;
+meta_data_t * free_list_tail = NULL;
+unsigned long segment_size = 0;
+unsigned long segment_free_space_size = 0;
+
 void *ff_malloc(size_t size) {
   return  f_malloc(size, &add_to_free_list_ff);
 }
@@ -44,6 +50,7 @@ void * try_existed_block(size_t size, add_func_t f) {
     if (ptr->size >= size) {
       break;
     }
+    ptr = ptr->next_free_block;
   }
   // no available free block
   if (ptr == NULL) {
@@ -67,7 +74,9 @@ void * add_new_block(size_t size) {
   block_meta->size = size;
   block_meta->is_used = 1;
   block_meta->prev_block = block_tail;
-  block_tail->next_block = block_meta;
+  if (block_tail != NULL) {
+    block_tail->next_block = block_meta;
+  }
   block_tail = block_meta;
   block_meta->next_block = NULL;
   block_meta->prev_free_block = NULL;
@@ -87,41 +96,114 @@ void f_free(void * ptr, add_func_t f) {
   try_coalesce(block, f);
 }
 
-void try_coalese(meta_data_t * block, add_func_t f) {
+void try_coalesce(meta_data_t * block, add_func_t f) {
   meta_data_t * new_block = block;
   // need to delete, not always true
   assert(block->is_used == 1);
-  if (block->is_used = 0) {
+  if (block->is_used == 0) {
     remove_block(block);
   }
   assert(block->is_used == 1);
-  if (block->next_block->is_used == 0 &&
+  if (block->next_block != NULL &&
+      block->next_block->is_used == 0 &&
       (void *)(block) + sizeof(meta_data_t) + block->size == block->next_block) {
     remove_block(block->next_block);
     block->size += (block->next_block->size + sizeof(meta_data_t));
-    block->next_block->next_block->prev_block = block;
+    if (block->next_block->next_block != NULL) {
+      block->next_block->next_block->prev_block = block;
+    }
     block->next_block = block->next_block->next_block;
   }
-  if (block->prev_block->is_used == 0 &&
+  if (block->prev_block != NULL &&
+      block->prev_block->is_used == 0 &&
       (void *)(block->prev_block) + sizeof(meta_data_t) + block->prev_block->size == block) {
     remove_block(block->prev_block);
     block->prev_block->size += (block->size + sizeof(meta_data_t));
     block->prev_block->next_block = block->next_block;
-    block->next_block->prev_block = block->prev_block;
+    if (block->next_block != NULL) {
+      block->next_block->prev_block = block->prev_block;
+    }
     new_block = block->prev_block;
   }
   f(new_block);
 }
 
 void add_to_free_list_ff(meta_data_t * block) {
+  block->is_used = 0;
+  meta_data_t ** ptr = &free_list_head;
+  while ((*ptr) != NULL) {
+    if (*ptr > block) {
+      break;
+    }
+    ptr = &((*ptr)->next_free_block);
+  }
+  block->next_free_block = *ptr;
+  if ((*ptr) != NULL) {
+    block->prev_free_block = (*ptr)->prev_free_block;
+    (*ptr)->prev_free_block = block;
+  } else {
+    block->prev_free_block = free_list_tail;
+    free_list_tail = block;
+  }
+  (*ptr) = block;
+  segment_free_space_size += block->size + sizeof(meta_data_t);
 }
 
 void add_to_free_list_bf(meta_data_t * block) {
+  block->is_used = 0;
+  meta_data_t ** ptr = &free_list_head;
+  while ((*ptr) != NULL) {
+    if ((*ptr)->size >= block->size) {
+      break;
+    }
+    ptr = &((*ptr)->next_free_block);
+  }
+  block->next_free_block = *ptr;
+  if ((*ptr) != NULL) {
+    block->prev_free_block = (*ptr)->prev_free_block;
+    (*ptr)->prev_free_block = block;
+  } else {
+    block->prev_free_block = free_list_tail;
+    free_list_tail = block;
+  }
+  (*ptr) = block;
+  segment_free_space_size += block->size + sizeof(meta_data_t);
 }
 
 void remove_block(meta_data_t * block) {
+  block->is_used = 1;
+  if (block->prev_free_block == NULL) {
+    free_list_head = block->next_free_block;
+  } else {
+    block->prev_free_block->next_free_block = block->next_free_block;
+  }
+  if (block->next_free_block == NULL) {
+    free_list_tail = block->prev_free_block;
+  } else {
+    block->next_free_block->prev_free_block = block->prev_free_block;
+  }
+  block->prev_free_block = NULL;
+  block->next_free_block = NULL;
+  segment_free_space_size -= block->size + sizeof(meta_data_t);
 }
 
+// can only split used block
 meta_data_t * split_block(meta_data_t * block1, size_t size) {
-  return NULL;
+  // important assertion
+  assert(block1->is_used == 1);
+  assert(block1->prev_free_block == NULL && block1->next_free_block == NULL);
+  assert(block1->size - size > sizeof(meta_data_t));
+  meta_data_t * block2 = (meta_data_t *)((void *)block1 + block1->size + sizeof(meta_data_t));
+  block2->is_used = block1->is_used;
+  block2->size = block1->size - sizeof(meta_data_t) - size;
+  block1->size = size;
+  block2->prev_block = block1;
+  block2->next_block = block1->next_block;
+  if (block1->next_block != NULL) {
+    block1->next_block->prev_block = block2;
+  }
+  block1->next_block = block2;
+  block2->prev_free_block = NULL;
+  block2->next_free_block = NULL;
+  return block2;
 }
