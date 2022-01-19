@@ -1,5 +1,6 @@
 #include "my_malloc.h"
 
+meta_data_t * block_head = NULL;
 meta_data_t * block_tail = NULL;
 meta_data_t * free_list_head = NULL;
 meta_data_t * free_list_tail = NULL;
@@ -19,7 +20,7 @@ void *bf_malloc(size_t size) {
 }
 
 void bf_free(void *ptr) {
-  f_free(ptr, &add_to_free_list_ff);
+  f_free(ptr, &add_to_free_list_bf);
 }
 
 unsigned long get_data_segment_size() { // in bytes
@@ -37,7 +38,12 @@ void * f_malloc(size_t size, add_func_t f) {
   void * addr = NULL;
   if ((addr = try_existed_block(size, f)) == NULL) {
     // require a new block
-    return add_new_block(size) + sizeof(meta_data_t);
+    void * ptr =add_new_block(size);
+    if (ptr == (void *) -1) {
+      return NULL;
+    } else {
+      return ptr + sizeof(meta_data_t);
+    }
   }
   assert(((meta_data_t *)addr)->is_used == 1);
   return addr + sizeof(meta_data_t);
@@ -68,7 +74,7 @@ void * try_existed_block(size_t size, add_func_t f) {
 void * add_new_block(size_t size) {
   void * ptr = sbrk(size + sizeof(meta_data_t));
   if (ptr == (void * )-1) {
-    return NULL;
+    return ptr;
   }
   meta_data_t * block_meta = (meta_data_t *) ptr;
   block_meta->size = size;
@@ -76,6 +82,8 @@ void * add_new_block(size_t size) {
   block_meta->prev_block = block_tail;
   if (block_tail != NULL) {
     block_tail->next_block = block_meta;
+  } else {
+    block_head = block_meta;
   }
   block_tail = block_meta;
   block_meta->next_block = NULL;
@@ -129,6 +137,8 @@ void try_coalesce(meta_data_t * block, add_func_t f) {
 }
 
 void add_to_free_list_ff(meta_data_t * block) {
+  assert(block->is_used == 1);
+  assert(block->prev_free_block == NULL & block->next_free_block == NULL);
   block->is_used = 0;
   meta_data_t ** ptr = &free_list_head;
   while ((*ptr) != NULL) {
@@ -150,6 +160,8 @@ void add_to_free_list_ff(meta_data_t * block) {
 }
 
 void add_to_free_list_bf(meta_data_t * block) {
+  assert(block->is_used == 1);
+  assert(block->prev_free_block == NULL & block->next_free_block == NULL);
   block->is_used = 0;
   meta_data_t ** ptr = &free_list_head;
   while ((*ptr) != NULL) {
@@ -193,7 +205,7 @@ meta_data_t * split_block(meta_data_t * block1, size_t size) {
   assert(block1->is_used == 1);
   assert(block1->prev_free_block == NULL && block1->next_free_block == NULL);
   assert(block1->size - size > sizeof(meta_data_t));
-  meta_data_t * block2 = (meta_data_t *)((void *)block1 + block1->size + sizeof(meta_data_t));
+  meta_data_t * block2 = (meta_data_t *)((void *)block1 + size + sizeof(meta_data_t));
   block2->is_used = block1->is_used;
   block2->size = block1->size - sizeof(meta_data_t) - size;
   block1->size = size;
@@ -206,4 +218,34 @@ meta_data_t * split_block(meta_data_t * block1, size_t size) {
   block2->prev_free_block = NULL;
   block2->next_free_block = NULL;
   return block2;
+}
+
+void print_blocks() {
+  printf("***Block Data***\n");
+  int cnt = 0;
+  meta_data_t * ptr = block_head;
+  while (ptr != NULL) {
+    printf("block %d: is_used[%lu], size[%lu], prev_block[%lu], next_block[%lu], \
+        prev_free[%lu], next_free[%lu] \n", cnt, ptr->is_used, ptr->size,
+        (unsigned long)ptr->prev_block, (unsigned long)ptr->next_block, (unsigned long)ptr->prev_free_block,
+        (unsigned long)ptr->next_free_block);
+    ptr = ptr->next_block;
+    ++cnt;
+  }
+  printf("Total blocks: %d\n\n", cnt);
+}
+
+void print_free_list() {
+  printf("***Free List Data***\n");
+  int cnt = 0;
+  meta_data_t * ptr = free_list_head;
+  while (ptr != NULL) {
+    printf("free block %d: is_used[%u], size[%lu], prev_block[%lu], next_block[%lu], \
+prev_free[%lu], next_free[%lu] \n", cnt, (unsigned int)ptr->is_used, ptr->size,
+        (unsigned long)ptr->prev_block, (unsigned long)ptr->next_block, (unsigned long)ptr->prev_free_block,
+        (unsigned long)ptr->next_free_block);
+    ptr = ptr->next_free_block;
+    ++cnt;
+  }
+  printf("Total free blocks: %d\n\n", cnt);
 }

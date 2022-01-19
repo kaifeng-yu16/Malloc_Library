@@ -20,9 +20,8 @@ int main(int argc, char *argv[])
   int sum = 0;
   int expected_sum = 0;
   int *array[NUM_ITEMS];
-
+  
   size = 4;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[0] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -33,7 +32,6 @@ int main(int argc, char *argv[])
   } //for i
 
   size = 16;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[1] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -42,9 +40,7 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[1][i];
   } //for i
-
   size = 8;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[2] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -55,7 +51,6 @@ int main(int argc, char *argv[])
   } //for i
 
   size = 32;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[3] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -69,7 +64,6 @@ int main(int argc, char *argv[])
   FREE(array[2]);
 
   size = 7;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[4] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -80,7 +74,6 @@ int main(int argc, char *argv[])
   } //for i
 
   size = 256;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[5] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -95,7 +88,6 @@ int main(int argc, char *argv[])
   FREE(array[3]);
 
   size = 23;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[6] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -106,7 +98,6 @@ int main(int argc, char *argv[])
   } //for i
 
   size = 4;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[7] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -119,7 +110,6 @@ int main(int argc, char *argv[])
   FREE(array[4]);
 
   size = 10;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[8] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -130,7 +120,6 @@ int main(int argc, char *argv[])
   } //for i
 
   size = 32;
-  printf("tests fot size %d \n", size);
   expected_sum += size * size;
   array[9] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -144,7 +133,6 @@ int main(int argc, char *argv[])
   FREE(array[7]);
   FREE(array[8]);
   FREE(array[9]);
-
   if (sum == expected_sum) {
     printf("Calculated expected value of %d\n", sum);
     printf("Test passed\n");

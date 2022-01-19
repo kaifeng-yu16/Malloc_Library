@@ -3,7 +3,7 @@
 #include <time.h>
 #include "my_malloc.h"
 
-#define NUM_ITERS    50
+#define NUM_ITERS    100
 #define NUM_ITEMS    10000
 
 #ifdef FF
@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
   srand(0);
 
   const unsigned chunk_size = 32;
-  const unsigned min_chunks = 1;
-  const unsigned max_chunks = 2048;
+  const unsigned min_chunks = 4;
+  const unsigned max_chunks = 16;
   for (i=0; i < NUM_ITEMS; i++) {
     malloc_items[0][i].bytes = ((rand() % (max_chunks - min_chunks + 1)) + min_chunks) * chunk_size;
     malloc_items[1][i].bytes = ((rand() % (max_chunks - min_chunks + 1)) + min_chunks) * chunk_size;
@@ -71,7 +71,8 @@ int main(int argc, char *argv[])
   for (i=0; i < NUM_ITEMS; i++) {
     malloc_items[0][i].address = (int *)MALLOC(malloc_items[0][i].bytes);
   } //for i
-  
+
+
   //Start Time
   clock_gettime(CLOCK_MONOTONIC, &start_time);
 
@@ -93,6 +94,7 @@ int main(int argc, char *argv[])
 
   data_segment_size = get_data_segment_size();
   data_segment_free_space = get_data_segment_free_space_size();
+  printf("data_segment_size = %lu, data_segment_free_space = %lu\n", data_segment_size, data_segment_free_space);
 
   double elapsed_ns = calc_time(start_time, end_time);
   printf("Execution Time = %f seconds\n", elapsed_ns / 1e9);
