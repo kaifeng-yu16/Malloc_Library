@@ -138,7 +138,7 @@ void try_coalesce(meta_data_t * block, add_func_t f) {
 
 void add_to_free_list_ff(meta_data_t * block) {
   assert(block->is_used == 1);
-  assert(block->prev_free_block == NULL & block->next_free_block == NULL);
+  assert(block->prev_free_block == NULL && block->next_free_block == NULL);
   block->is_used = 0;
   meta_data_t ** ptr = &free_list_head;
   while ((*ptr) != NULL) {
@@ -161,7 +161,7 @@ void add_to_free_list_ff(meta_data_t * block) {
 
 void add_to_free_list_bf(meta_data_t * block) {
   assert(block->is_used == 1);
-  assert(block->prev_free_block == NULL & block->next_free_block == NULL);
+  assert(block->prev_free_block == NULL && block->next_free_block == NULL);
   block->is_used = 0;
   meta_data_t ** ptr = &free_list_head;
   while ((*ptr) != NULL) {
