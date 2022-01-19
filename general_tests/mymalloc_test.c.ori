@@ -22,7 +22,6 @@ int main(int argc, char *argv[])
   int *array[NUM_ITEMS];
   
   size = 4;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[0] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -31,12 +30,8 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[0][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
-  //size = 16;
-  size = 256;
-  printf("testing for size %d\n", size);
+  size = 16;
   expected_sum += size * size;
   array[1] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -45,11 +40,7 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[1][i];
   } //for i
-  print_blocks();
-  print_free_list();
-
   size = 8;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[2] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -58,11 +49,8 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[2][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
   size = 32;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[3] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -71,16 +59,11 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[3][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
   FREE(array[0]);
   FREE(array[2]);
-  print_blocks();
-  print_free_list();
 
   size = 7;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[4] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -89,12 +72,8 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[4][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
-  //size = 256;
-  size = 16;
-  printf("testing for size %d\n", size);
+  size = 256;
   expected_sum += size * size;
   array[5] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -103,17 +82,12 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[5][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
   FREE(array[5]);
   FREE(array[1]);
   FREE(array[3]);
-  print_blocks();
-  print_free_list();
 
   size = 23;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[6] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -122,11 +96,8 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[6][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
   size = 4;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[7] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -135,15 +106,10 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[7][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
   FREE(array[4]);
-  print_blocks();
-  print_free_list();
 
   size = 10;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[8] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -152,11 +118,8 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[8][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
   size = 32;
-  printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[9] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
@@ -165,16 +128,11 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     sum += array[9][i];
   } //for i
-  print_blocks();
-  print_free_list();
 
   FREE(array[6]);
   FREE(array[7]);
   FREE(array[8]);
   FREE(array[9]);
-  print_blocks();
-  print_free_list();
-
   if (sum == expected_sum) {
     printf("Calculated expected value of %d\n", sum);
     printf("Test passed\n");

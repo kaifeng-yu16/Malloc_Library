@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
   print_blocks();
   print_free_list();
 
-  //size = 16;
-  size = 256;
+  size = 16;
+  //size = 256;
   printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[1] = (int *)MALLOC(size * sizeof(int));
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   print_blocks();
   print_free_list();
 
-  size = 7;
+  size = 9;
   printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[4] = (int *)MALLOC(size * sizeof(int));
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
   print_free_list();
 
   //size = 256;
-  size = 16;
+  size = 10;
   printf("testing for size %d\n", size);
   expected_sum += size * size;
   array[5] = (int *)MALLOC(size * sizeof(int));
@@ -107,8 +107,9 @@ int main(int argc, char *argv[])
   print_free_list();
 
   FREE(array[5]);
-  FREE(array[1]);
-  FREE(array[3]);
+  FREE(array[4]);
+  //FREE(array[1]);
+  //FREE(array[3]);
   print_blocks();
   print_free_list();
 
@@ -119,12 +120,39 @@ int main(int argc, char *argv[])
   for (i=0; i < size; i++) {
     array[6][i] = size;
   } //for i
+  print_blocks();
+  print_free_list();
+  
+  int tmp_sum = 0;
+  for (i=0; i < 23; i++) {
+    tmp_sum += array[6][i];
+  } //for i
+  printf("sum before = %d\n", tmp_sum);
+
+  size = 256;
+  printf("testing for size %d\n", size);
+  expected_sum += size * size;
+  array[7] = (int *)MALLOC(size * sizeof(int));
   for (i=0; i < size; i++) {
-    sum += array[6][i];
+    array[7][i] = size;
+  } //for i
+  for (i=0; i < size; i++) {
+    sum += array[7][i];
   } //for i
   print_blocks();
   print_free_list();
 
+
+  tmp_sum = 0;
+  for (i=0; i < 23; i++) {
+    sum += array[6][i];
+    tmp_sum += array[6][i];
+  } //for i
+  printf("sum after = %d\n", tmp_sum);
+  
+  print_blocks();
+  print_free_list();
+/*
   size = 4;
   printf("testing for size %d\n", size);
   expected_sum += size * size;
@@ -174,7 +202,7 @@ int main(int argc, char *argv[])
   FREE(array[9]);
   print_blocks();
   print_free_list();
-
+*/
   if (sum == expected_sum) {
     printf("Calculated expected value of %d\n", sum);
     printf("Test passed\n");
