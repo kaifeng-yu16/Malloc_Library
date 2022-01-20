@@ -13,8 +13,6 @@ typedef struct meta_data {
   struct meta_data * next_free_block;
 } meta_data_t;
 /*
-meta_data_t * block_head = NULL;
-meta_data_t * block_tail = NULL;
 meta_data_t * free_list_head = NULL;
 meta_data_t * free_list_tail = NULL;
 unsigned long segment_size = 0;
@@ -53,8 +51,7 @@ void remove_block(meta_data_t * block); // need to set is_used to 1
 void split_block(meta_data_t* block1, size_t size);
 
 // functions for testing
-void print_sizeof_metadata() {
-  printf("sizeof meta_data_t is %ld\n", sizeof(meta_data_t));
-}
+void print_sizeof_metadata();
 //void print_blocks();
-//void print_free_list();
+void print_free_list();
+void print_block(meta_data_t * ptr);
