@@ -1,36 +1,45 @@
 #include "my_malloc.h"
 
-//meta_data_t * block_head = NULL;
-//meta_data_t * block_tail = NULL;
 meta_data_t * free_list_head = NULL;
 meta_data_t * free_list_tail = NULL;
 unsigned long segment_size = 0;
 unsigned long segment_free_space_size = 0;
 
+// First fit malloc function
+// size: input, the size that need to be malloc
 void *ff_malloc(size_t size) {
   return  f_malloc(size, &find_existed_block_ff);
 }
 
+// First fit free function
 void ff_free(void *ptr) {
   f_free(ptr);
 }
 
+// Best fit malloc function
+// size: input, the size that need to be malloc
 void *bf_malloc(size_t size) {
   return  f_malloc(size, &find_existed_block_bf);
 }
 
+// Best fit free function
 void bf_free(void *ptr) {
   f_free(ptr);
 }
 
+// function for performance study
 unsigned long get_data_segment_size() { // in bytes
   return segment_size;
 }
 
+// function for performance study
 unsigned long get_data_segment_free_space_size() { // in bytes
   return segment_free_space_size;
 }
 
+// malloc funtion that can be used by both FF and BF
+// size: input, the size that need to be malloc
+// f: a function used to find appropriate free block
 void * f_malloc(size_t size, add_func_t f) {
   if (size == 0) {
     return NULL;
@@ -49,6 +58,11 @@ void * f_malloc(size_t size, add_func_t f) {
   return addr + sizeof(meta_data_t);
 }
 
+// function that returns the adress of an appropriate block in free list
+// if it exists, remove it from free list return it's address; else, return NULL
+// size: input, the size that need to be malloc
+// f: a function used to find appropriate free block
+// return: if there is an appropriate block, return its address; else, return NULL
 void * try_existed_block(size_t size, add_func_t f) {
   meta_data_t * ptr = f(size);
   // no available free block
@@ -65,6 +79,10 @@ void * try_existed_block(size_t size, add_func_t f) {
   return ptr;
 }
 
+// function that tries to find an appropriate block in free list for FF
+// if it exists, return it's address; else, return NULL
+// size: input, the size that need to be malloc
+// return: if there is an appropriate block, return its address; else, return NULL
 meta_data_t * find_existed_block_ff(size_t size) {
   meta_data_t * ptr = free_list_head;
   while (ptr != NULL) {
@@ -77,6 +95,10 @@ meta_data_t * find_existed_block_ff(size_t size) {
   return NULL;
 }
 
+// function that tries to find an appropriate block in free list for BF
+// if it exists, return it's address; else, return NULL
+// size: input, the size that need to be malloc
+// return: if there is an appropriate block, return its address; else, return NULL
 meta_data_t * find_existed_block_bf(size_t size) {
   meta_data_t * ptr = free_list_head;
   size_t min = SIZE_MAX;
@@ -97,6 +119,9 @@ meta_data_t * find_existed_block_bf(size_t size) {
   return min_ptr;
 }
 
+// function that use sbrk() to add a new block
+// size: input, the size that need to be malloc
+// return: return the pointer returned by sbrk()
 void * add_new_block(size_t size) {
   void * ptr = sbrk(size + sizeof(meta_data_t));
   if (ptr == (void * )-1) {
@@ -112,6 +137,8 @@ void * add_new_block(size_t size) {
   return ptr;
 }
 
+// free funtion that can be used by both FF and BF
+// ptr: input, the ptr that needs to be freed
 void f_free(void * ptr) {
   if (ptr == NULL) {
     return;
@@ -123,6 +150,9 @@ void f_free(void * ptr) {
   try_coalesce(block);
 }
 
+// if block's previous free block or next free block is adjacent to it,
+// then merge then into one free block
+// block: input, the block needs to be merged
 void try_coalesce(meta_data_t * block) {
   assert(block->is_used == 0);
   if (block->next_free_block != NULL &&
@@ -149,6 +179,8 @@ void try_coalesce(meta_data_t * block) {
   }
 }
 
+// add a block to free list
+// block: input, the ptr of the block that needs to be add to free list
 void add_to_free_list(meta_data_t * block) {
   assert(block->is_used == 1);
   assert(block->prev_free_block == NULL && block->next_free_block == NULL);
@@ -172,6 +204,8 @@ void add_to_free_list(meta_data_t * block) {
   segment_free_space_size += block->size + sizeof(meta_data_t);
 }
 
+// remove a block from free list
+// block: input, the ptr of the block that needs to be removed from free list
 void remove_block(meta_data_t * block) {
   assert(block->is_used == 0);
   block->is_used = 1;
@@ -191,6 +225,8 @@ void remove_block(meta_data_t * block) {
 }
 
 // split an unused block into two, use the first one
+// block1: input, the block that need to be split
+// size: the size of the first block
 void split_block(meta_data_t * block1, size_t size) {
   // important assertion
   assert(block1->is_used == 0);
@@ -217,22 +253,7 @@ void split_block(meta_data_t * block1, size_t size) {
   segment_free_space_size -= (size + sizeof(meta_data_t));
 }
 
-/*
-void print_blocks() {
-  printf("***Block Data***\n");
-  int cnt = 0;
-  meta_data_t * ptr = block_head;
-  while (ptr != NULL) {
-    printf("block %d: is_used[%lu], size[%lu], prev_block[%lu], next_block[%lu], \
-        prev_free[%lu], next_free[%lu] \n", cnt, ptr->is_used, ptr->size,
-        (unsigned long)ptr->prev_block, (unsigned long)ptr->next_block, (unsigned long)ptr->prev_free_block,
-        (unsigned long)ptr->next_free_block);
-    ptr = ptr->next_block;
-    ++cnt;
-  }
-  printf("Total blocks: %d\n\n", cnt);
-}
-*/
+// print free list
 void print_free_list() {
   printf("***Free List Data***\n");
   int cnt = 0;
@@ -247,6 +268,7 @@ void print_free_list() {
   printf("Total free blocks: %d\n\n", cnt);
 }
 
+// print a certain block
 void print_block(meta_data_t * ptr) {
   printf("***Block Data***\n");
   printf("free block[%lu]: is_used[%u], size[%lu], prev_free[%lu], next_free[%lu] \n", 
@@ -254,6 +276,7 @@ void print_block(meta_data_t * ptr) {
       (unsigned long)ptr->next_free_block);
 }
 
+// pinrt the size of meta_data_t
 void print_sizeof_metadata() {
   printf("sizeof meta_data_t is %ld\n", sizeof(meta_data_t));
 }
